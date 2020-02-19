@@ -1,8 +1,2 @@
-#.idea/
-#*.exe
-#*.pas
-#*.priv
-#*.pem
-
 *
 !*.go
