@@ -1,5 +1,8 @@
-.idea/
-*.exe
-*.pas
-*.priv
-*.pem
+#.idea/
+#*.exe
+#*.pas
+#*.priv
+#*.pem
+
+*
+!*.go
