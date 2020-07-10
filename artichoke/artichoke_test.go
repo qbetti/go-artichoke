@@ -3,12 +3,14 @@ package artichoke
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/qbetti/go-artichoke/artichoke/generator"
 	"github.com/qbetti/go-artichoke/artichoke/pas"
 	"github.com/stretchr/testify/assert"
 	"log"
+	"os"
 	"testing"
 	"time"
 )
@@ -28,7 +30,7 @@ func TestKey(t *testing.T) {
 	//action0 := "This is some random data to be signed"
 	//action1 := "Other data"
 
-	actions := generator.GenerateRandomActions(1000, 100)
+	actions := generator.GenerateRandomActions(1000, 0)
 	seq := pas.NewPeerActionSequence()
 
 	for i := 0; i < len(actions); i++ {
@@ -69,26 +71,40 @@ func BenchmarkAppendAction(b *testing.B) {
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	crypto.SaveECDSA("peerkey.priv", peerKey)
 
 	groupKey := make([]byte, 32)
 	rand.Read(groupKey)
 	//fmt.Println(hex.EncodeToString(groupKey))
+	hexGroupKey := hex.EncodeToString(groupKey)
+	f, err := os.Create("groupkey.aes")
+	f.WriteString(hexGroupKey)
+	f.Close()
 
 	//action0 := "This is some random data to be signed"
 	//action1 := "Other data"
 
 	//actions := generator.GenerateRandomActions(100000, 100)
 
-	action := generator.GenerateRandomAction(100)
+	action := generator.GenerateRandomAction(0)
 	seq := pas.NewPeerActionSequence()
 
 	b.ResetTimer()
 
 	start := time.Now()
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 10000; i++ {
 		seq.Append(action, peerKey, "myGroup", groupKey)
 	}
 	log.Printf("Took %s", time.Since(start))
+	f, err = os.Create("sequence.pas")
+	f.WriteString(seq.String())
+	f.Close()
+}
+
+func BenchmarkVerifyApplication(b *testing.B) {
+	seq, _ := pas.LoadFromFile("sequence.pas")
+	start := time.Now()
+	seq.Verify()
+	log.Printf("Took %s", time.Since(start))
+
 }

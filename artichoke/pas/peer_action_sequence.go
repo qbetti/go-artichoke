@@ -3,6 +3,7 @@ package pas
 import (
 	"bufio"
 	"crypto/ecdsa"
+	"encoding/base64"
 	"fmt"
 	"os"
 )
@@ -94,6 +95,16 @@ func (pas PeerActionSequence) String() string {
 		s += "\n"
 	}
 	return s
+}
+
+func(pas PeerActionSequence) Serialize() string {
+	var s string
+	for _, peerAction := range pas.peerActions {
+		s += peerAction.String()
+		s += "?"
+	}
+
+	return base64.StdEncoding.EncodeToString([]byte(s))
 }
 
 func (pas *PeerActionSequence) Verify() (bool, []InvalidDigestError) {
